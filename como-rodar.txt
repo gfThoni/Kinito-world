@@ -1,0 +1,42 @@
+COMO RODAR O PROJETO (world of R-Blue)
+========================================
+
+1) INSTALE O NODE.JS (se o computador ainda não tiver)
+   - Baixe em: https://nodejs.org (versão LTS)
+   - Instale normalmente (Next, Next, Finish)
+   - Para confirmar que instalou certo, abra o terminal (cmd/PowerShell no
+     Windows) e digite:
+       node -v
+     Deve aparecer um número de versão.
+
+2) COPIE A PASTA DO PROJETO
+   - Copie a pasta inteira do projeto do pen drive para o computador.
+   - NÃO precisa copiar a pasta "node_modules" (se existir) — ela é
+     recriada no passo seguinte e costuma ser bem pesada.
+
+3) ABRA O TERMINAL NA PASTA DO PROJETO
+   - Windows: cd caminho\da\pasta
+   - Mac/Linux: cd caminho/da/pasta
+
+4) INSTALE AS DEPENDÊNCIAS
+   - Com o terminal na pasta do projeto, rode:
+       npm install
+   - Isso baixa tudo que o projeto precisa (Phaser, Vite, Socket.io etc).
+   - Precisa de internet nesse passo.
+
+5) RODE O SERVIDOR DE DESENVOLVIMENTO
+   - Rode:
+       npm run dev
+   - Vai aparecer um endereço tipo http://localhost:5173
+   - Abra esse endereço no navegador para ver o jogo rodando.
+
+6) (OPCIONAL) RODE O SERVIDOR MULTIPLAYER
+   - O projeto usa Socket.io, então pode existir um servidor separado
+     em server/server.ts.
+   - Abra OUTRO terminal (deixando o anterior aberto) na mesma pasta
+     e rode:
+       npm run server
+
+DÚVIDAS OU ERROS
+   Se aparecer algum erro durante o npm install ou npm run dev,
+   copie a mensagem de erro completa para pedir ajuda.

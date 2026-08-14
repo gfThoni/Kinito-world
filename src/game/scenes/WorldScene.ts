@@ -4,6 +4,8 @@ import { gameState } from "../GameState";
 export class WorldScene extends Phaser.Scene {
   private player!: Phaser.GameObjects.Rectangle;
   private target!: Phaser.Math.Vector2;
+  private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+  private keys!: Record<string, Phaser.Input.Keyboard.Key>;
 
   private minimap!: Phaser.GameObjects.Graphics;
   private minimapPlayer!: Phaser.GameObjects.Rectangle;
@@ -30,6 +32,12 @@ export class WorldScene extends Phaser.Scene {
       this.player.x,
       this.player.y
     );
+
+    this.cursors = this.input.keyboard!.createCursorKeys();
+    this.keys = this.input.keyboard!.addKeys(
+    "W,S,A,D"
+    ) as Record<string, Phaser.Input.Keyboard.Key>;
+
 
     this.input.on(
       "pointerdown",
@@ -347,8 +355,8 @@ private createWorld() {
       1450,
       800,
       0x9b59b6,
-      "benjamin",
-      "Explore o mundo! Existem muitos segredos."
+      "???",
+      "???"
     );
   }
 

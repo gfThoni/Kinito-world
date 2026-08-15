@@ -55,7 +55,13 @@ export class WorldScene extends Phaser.Scene {
     this.createItems();
     this.createHUD();
     this.createMinimap();
-    this.socket = io("https://kinito-world.onrender.com");
+    const serverUrl =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1"
+        ? "http://localhost:3000"
+        : "https://kinito-world.onrender.com";
+
+    this.socket = io(serverUrl);
 
     this.socket.on("currentPlayers", (players) => {
     for (const player of players) {
@@ -90,6 +96,9 @@ export class WorldScene extends Phaser.Scene {
       this.player.x,
       this.player.y
     );
+
+    // Launch chat UI scene and pass socket
+    this.scene.launch("ChatUIScene", { socket: this.socket });
 
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.keys = this.input.keyboard!.addKeys(

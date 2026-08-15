@@ -20,8 +20,8 @@ export class MenuScene extends Phaser.Scene {
       .text(width / 2, height * 0.68, "JOGAR", {
         fontFamily: "Arial",
         fontSize: "42px",
-        color: "#fff4a8",
-        stroke: "#172b5c",
+        color: "#ffffff",
+        stroke: "#000000",
         strokeThickness: 8
       })
       .setOrigin(0.5)

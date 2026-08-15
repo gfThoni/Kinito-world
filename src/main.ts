@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { WorldScene } from "./game/scenes/WorldScene";
-import { MenuScene } from "./game/scenes/MenuScene";  
+import { MenuScene } from "./game/scenes/MenuScene";
+import { ChatUIScene } from "./game/scenes/ChatUIScene";
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -15,7 +16,7 @@ const config: Phaser.Types.Core.GameConfig = {
 
   backgroundColor: "#00bbff",
 
-  scene: [MenuScene, WorldScene]
+  scene: [MenuScene, WorldScene, ChatUIScene]
 };
 
 new Phaser.Game(config);                      

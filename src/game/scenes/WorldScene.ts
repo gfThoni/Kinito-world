@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { gameState } from "../GameState";
+import { io, Socket } from "socket.io-client";
 
 export class WorldScene extends Phaser.Scene {
   private player!: Phaser.GameObjects.Rectangle;
@@ -16,6 +17,8 @@ export class WorldScene extends Phaser.Scene {
   private npcs: Phaser.GameObjects.Rectangle[] = [];
   private items: Phaser.GameObjects.Arc[] = [];
 
+  private socket!: Socket;
+
   constructor() {
     super("WorldScene");
   }
@@ -27,6 +30,7 @@ export class WorldScene extends Phaser.Scene {
     this.createItems();
     this.createHUD();
     this.createMinimap();
+    this.socket = io("https://kinito-world.onrender.com");
 
     this.target = new Phaser.Math.Vector2(
       this.player.x,

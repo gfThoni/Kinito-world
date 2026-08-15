@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { WorldScene } from "./game/scenes/WorldScene";
+import { MenuScene } from "./game/scenes/MenuScene";  
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -12,9 +13,9 @@ const config: Phaser.Types.Core.GameConfig = {
     autoCenter: Phaser.Scale.CENTER_BOTH
   },
 
-  backgroundColor: "#000000",
+  backgroundColor: "#00bbff",
 
-  scene: [WorldScene]
+  scene: [MenuScene, WorldScene]
 };
 
-new Phaser.Game(config);
+new Phaser.Game(config);                      

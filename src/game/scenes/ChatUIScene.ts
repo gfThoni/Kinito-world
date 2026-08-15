@@ -160,6 +160,6 @@ export class ChatUIScene extends Phaser.Scene {
 
   destroy() {
     this.shutdown();
-    super.destroy();
+    this.scene.stop();
   }
 }

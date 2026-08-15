@@ -3,6 +3,7 @@ import { gameState } from "../GameState";
 import { io, Socket } from "socket.io-client";
 
 export class WorldScene extends Phaser.Scene {
+  private playerName?: string | null;
   private player!: Phaser.GameObjects.Rectangle;
   private target!: Phaser.Math.Vector2;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -48,6 +49,10 @@ export class WorldScene extends Phaser.Scene {
     super("WorldScene");
   }
 
+  init(data: any) {
+    this.playerName = data?.playerName || localStorage.getItem("playerName");
+  }
+
   create() {
     this.createWorld();
     this.createPlayer();
@@ -61,7 +66,26 @@ export class WorldScene extends Phaser.Scene {
         ? "http://localhost:3000"
         : "https://kinito-world.onrender.com";
 
-    this.socket = io(serverUrl);
+    console.log("Connecting to game server:", serverUrl);
+    this.socket = io(serverUrl, {
+      transports: ["websocket", "polling"],
+      reconnectionAttempts: 3
+    });
+
+    this.socket.on("connect", () => {
+      console.log("Socket connected:", this.socket.id);
+      if (this.playerName) {
+        this.socket.emit("setName", this.playerName);
+      }
+    });
+
+    this.socket.on("connect_error", (err: any) => {
+      console.error("Socket connect_error:", err);
+    });
+
+    this.socket.on("disconnect", (reason: any) => {
+      console.warn("Socket disconnected:", reason);
+    });
 
     this.socket.on("currentPlayers", (players) => {
     for (const player of players) {

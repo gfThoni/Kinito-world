@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import path from "node:path";
-import Database from "better-sqlite3";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -11,47 +10,60 @@ if (!fs.existsSync(dbDir)) {
   fs.mkdirSync(dbDir, { recursive: true });
 }
 
-const dbPath = path.join(dbDir, "chat.db");
-const db = new Database(dbPath);
+const jsonPath = path.join(dbDir, "chat.json");
 
-db.prepare(
-  `CREATE TABLE IF NOT EXISTS messages (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    playerId TEXT,
-    playerName TEXT,
-    text TEXT,
-    ts INTEGER
-  )`
-).run();
+type ChatMessage = {
+  id: number;
+  playerId: string;
+  playerName?: string | null;
+  text: string;
+  ts: number;
+};
+
+function readAll(): ChatMessage[] {
+  try {
+    if (!fs.existsSync(jsonPath)) return [] as any[];
+    const raw = fs.readFileSync(jsonPath, "utf-8");
+    return JSON.parse(raw || "[]") as ChatMessage[];
+  } catch (err) {
+    console.error("Failed reading chat.json", err);
+    return [] as ChatMessage[];
+  }
+}
+
+function writeAll(rows: ChatMessage[]) {
+  try {
+    fs.writeFileSync(jsonPath, JSON.stringify(rows, null, 2), "utf-8");
+  } catch (err) {
+    console.error("Failed writing chat.json", err);
+  }
+}
+
+let messages: ChatMessage[] = readAll();
+let nextId = messages.length > 0 ? Math.max(...messages.map((m: ChatMessage) => m.id)) + 1 : 1;
 
 export const chatStore = {
-  saveMessage(payload: { playerId: string; playerName?: string; text: string }) {
+  saveMessage(payload: { playerId: string; playerName?: string | null; text: string }): ChatMessage {
     const ts = Date.now();
-    const stmt = db.prepare(
-      `INSERT INTO messages (playerId, playerName, text, ts) VALUES (?, ?, ?, ?)`
-    );
-    const info = stmt.run(payload.playerId, payload.playerName || null, payload.text, ts);
-    return {
-      id: Number(info.lastInsertRowid),
+    const msg = {
+      id: nextId++,
       playerId: payload.playerId,
-      playerName: payload.playerName || `Player-${payload.playerId.slice(0, 5)}`,
+      playerName: payload.playerName || `Player-${payload.playerId.slice(0,5)}`,
       text: payload.text,
       ts
     };
+
+    messages.push(msg);
+    // keep last 5000 messages
+    if (messages.length > 5000) messages = messages.slice(-5000);
+    writeAll(messages);
+    return msg;
   },
 
-  getMessages(since?: number) {
+  getMessages(since?: number): ChatMessage[] {
     if (since) {
-      const stmt = db.prepare(
-        `SELECT id, playerId, playerName, text, ts FROM messages WHERE ts > ? ORDER BY ts ASC LIMIT 500`
-      );
-      return stmt.all(since);
+      return messages.filter((m: ChatMessage) => m.ts > since).slice(-500);
     }
-
-    const stmt = db.prepare(
-      `SELECT id, playerId, playerName, text, ts FROM messages ORDER BY ts DESC LIMIT 200`
-    );
-    const rows = stmt.all();
-    return rows.reverse();
+    return messages.slice(-200);
   }
 };

@@ -14,6 +14,7 @@ type Player = {
   id: string;
   x: number;
   y: number;
+  name?: string | null;
 };
 
 const players = new Map<string, Player>();
@@ -62,6 +63,15 @@ io.on("connection", (socket) => {
     }
   );
 
+  // Set player name (from client)
+  socket.on("setName", (name: string) => {
+    const current = players.get(socket.id);
+    if (!current) return;
+    current.name = String(name).slice(0, 32);
+    // notify others about the update
+    socket.broadcast.emit("playerUpdated", current);
+  });
+
   socket.on("disconnect", () => {
     console.log("🔴 Jogador saiu:", socket.id);
 
@@ -79,9 +89,11 @@ io.on("connection", (socket) => {
       const text = String(payload?.text || "").slice(0, 1000);
       if (!text.trim()) return;
 
+      const playerName = payload?.playerName || players.get(socket.id)?.name || null;
+
       const saved = chatStore.saveMessage({
         playerId: socket.id,
-        playerName: payload?.playerName,
+        playerName,
         text
       });
 

@@ -1,10 +1,20 @@
 import Phaser from "phaser";
 import type { Socket } from "socket.io-client";
 
+type ChatMessage = {
+  id: number;
+  playerId: string;
+  playerName?: string;
+  text: string;
+  ts: number;
+};
+
 export class ChatUIScene extends Phaser.Scene {
   private socket?: Socket;
   private container?: HTMLDivElement;
   private messagesDiv?: HTMLDivElement;
+  private statusDiv?: HTMLDivElement;
+  private playerName?: string | null;
 
   constructor() {
     super("ChatUIScene");
@@ -18,10 +28,23 @@ export class ChatUIScene extends Phaser.Scene {
     this.createDOM();
 
     if (this.socket) {
-      this.socket.on("chatMessage", (msg: any) => this.appendMessage(msg));
-      this.socket.on("chatHistory", (msgs: any[]) => {
+      this.socket.on("chatMessage", (msg: ChatMessage) => this.appendMessage(msg));
+      this.socket.on("chatHistory", (msgs: ChatMessage[]) => {
         for (const m of msgs) this.appendMessage(m);
       });
+      this.socket.on("connect", () => this.setStatus("Conectado"));
+      this.socket.on("disconnect", (reason: any) => this.setStatus("Desconectado"));
+      this.socket.on("connect_error", (err: any) => {
+        console.error("Socket connect_error:", err);
+        this.setStatus("Erro de conexão");
+      });
+      // if name stored, send to server
+      const stored = localStorage.getItem("playerName");
+      if (stored) {
+        this.playerName = stored;
+        this.socket.emit("setName", stored);
+        this.setStatus(`Conectado como ${stored}`);
+      }
     }
   }
 
@@ -73,7 +96,7 @@ export class ChatUIScene extends Phaser.Scene {
     send.addEventListener("click", () => {
       const text = input.value.trim();
       if (!text || !this.socket) return;
-      this.socket.emit("chatMessage", { text });
+      this.socket.emit("chatMessage", { text, playerName: this.playerName });
       input.value = "";
     });
 
@@ -86,16 +109,27 @@ export class ChatUIScene extends Phaser.Scene {
     row.appendChild(input);
     row.appendChild(send);
 
+    // name is provided in menu; ChatUI is only for messages/status
+
+    // status
+    const status = document.createElement("div");
+    status.style.fontSize = "12px";
+    status.style.color = "#ddd";
+    status.style.textAlign = "right";
+    status.textContent = "Conectando...";
+
     container.appendChild(messages);
+    container.appendChild(status);
     container.appendChild(row);
 
     document.body.appendChild(container);
 
     this.container = container;
     this.messagesDiv = messages;
+    this.statusDiv = status;
   }
 
-  private appendMessage(msg: any) {
+  private appendMessage(msg: ChatMessage) {
     if (!this.messagesDiv) return;
     const el = document.createElement("div");
     const time = new Date(msg.ts || Date.now()).toLocaleTimeString();
@@ -106,6 +140,10 @@ export class ChatUIScene extends Phaser.Scene {
     this.messagesDiv.scrollTop = this.messagesDiv.scrollHeight;
   }
 
+  private setStatus(text: string) {
+    if (this.statusDiv) this.statusDiv.textContent = text;
+  }
+
   shutdown() {
     if (this.container && this.container.parentNode) {
       this.container.parentNode.removeChild(this.container);
@@ -114,6 +152,9 @@ export class ChatUIScene extends Phaser.Scene {
     if (this.socket) {
       this.socket.off("chatMessage");
       this.socket.off("chatHistory");
+      this.socket.off("connect");
+      this.socket.off("disconnect");
+      this.socket.off("connect_error");
     }
   }
 

@@ -6,7 +6,7 @@ export class MenuScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("kinito-logo", "img/kinito-world-logo.png");
+    this.load.image("kinito-logo", "img/logo.png");
   }
 
   create() {

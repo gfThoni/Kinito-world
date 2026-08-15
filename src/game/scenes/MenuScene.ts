@@ -6,15 +6,18 @@ export class MenuScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("kinito-logo", "/img/kinito-world-logo.png");
+    this.load.image("kinito-logo", "img/kinito-world-logo.png");
   }
 
   create() {
     const { width, height } = this.scale;
 
-    this.add
-      .image(width / 2, height * 0.32, "kinito-logo")
-      .setDisplaySize(Math.min(width * 0.7, 700), Math.min(height * 0.35, 350));
+    const logo = this.add.image(width / 2, height * 0.32, "kinito-logo");
+    // scale logo to fit nicely while preserving aspect ratio
+    const maxWidth = Math.min(width * 0.7, 900);
+    const scale = Math.min(1, maxWidth / (logo.width || maxWidth));
+    logo.setScale(scale);
+    logo.setOrigin(0.5);
 
     // Name input using DOM overlay (required)
     const nameContainer = document.createElement("div");

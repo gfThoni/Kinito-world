@@ -19,6 +19,31 @@ export class WorldScene extends Phaser.Scene {
 
   private socket!: Socket;
 
+  private otherPlayers = new Map<
+  string,
+  Phaser.GameObjects.Rectangle
+>();
+
+  private addOtherPlayer(player: {
+  id: string;
+  x: number;
+  y: number;
+  }) {
+  if (this.otherPlayers.has(player.id)) return;
+
+  const other = this.add.rectangle(
+    player.x,
+    player.y,
+    32,
+    32,
+    0xff4d6d
+  );
+
+  this.otherPlayers.set(player.id, other);
+}
+
+  
+
   constructor() {
     super("WorldScene");
   }
@@ -31,6 +56,35 @@ export class WorldScene extends Phaser.Scene {
     this.createHUD();
     this.createMinimap();
     this.socket = io("https://kinito-world.onrender.com");
+
+    this.socket.on("currentPlayers", (players) => {
+    for (const player of players) {
+    if (player.id === this.socket.id) continue;
+
+    this.addOtherPlayer(player);
+    }
+    });
+
+    this.socket.on("playerJoined", (player) => {
+    this.addOtherPlayer(player);
+    });
+
+    this.socket.on("playerMoved", (player) => {
+    const other = this.otherPlayers.get(player.id);
+
+    if (!other) return;
+
+    other.setPosition(player.x, player.y);
+    });
+
+    this.socket.on("playerLeft", (id) => {
+    const other = this.otherPlayers.get(id);
+
+    if (!other) return;
+
+    other.destroy();
+    this.otherPlayers.delete(id);
+    });
 
     this.target = new Phaser.Math.Vector2(
       this.player.x,
@@ -97,28 +151,33 @@ export class WorldScene extends Phaser.Scene {
       );
 
     if (distance > 5) {
-      const angle =
-        Phaser.Math.Angle.Between(
-          this.player.x,
-          this.player.y,
-          this.target.x,
-          this.target.y
-        );
+  const angle =
+    Phaser.Math.Angle.Between(
+      this.player.x,
+      this.player.y,
+      this.target.x,
+      this.target.y
+    );
 
-      const speed = 220;
+  const speed = 220;
 
-      this.player.x +=
-        Math.cos(angle) *
-        speed *
-        delta /
-        1000;
+  this.player.x +=
+    Math.cos(angle) *
+    speed *
+    delta /
+    1000;
 
-      this.player.y +=
-        Math.sin(angle) *
-        speed *
-        delta /
-        1000;
-    }
+  this.player.y +=
+    Math.sin(angle) *
+    speed *
+    delta /
+    1000;
+
+  this.socket.emit("playerMove", {
+    x: this.player.x,
+    y: this.player.y
+  });
+}
 
     this.checkItems();
     this.checkNPCs();

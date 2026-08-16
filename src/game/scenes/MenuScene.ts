@@ -13,63 +13,35 @@ export class MenuScene extends Phaser.Scene {
     const { width, height } = this.scale;
 
     const logo = this.add.image(
-  width / 2,
-  height * 0.28,
-  "kinito-logo"
-);
+      width / 2,
+      height / 2.8,
+      "kinito-logo"
+    );
 
-const maxWidth = Math.min(width * 0.65, 520);
-const scale = maxWidth / logo.width;
+    const maxWidth = Math.min(width * 0.65, 520);
+    const scale = maxWidth / logo.width;
 
-logo.setScale(scale);
-logo.setOrigin(0.5);
+    logo.setScale(scale);
+    logo.setOrigin(0.5);
 
-    // Name input using DOM overlay (required)
-    const nameContainer = document.createElement("div");
-    nameContainer.style.position = "fixed";
-    nameContainer.style.left = "50%";
-    nameContainer.style.top = "62%";
-    nameContainer.style.transform = "translateX(-50%)";
-    nameContainer.style.display = "flex";
-    nameContainer.style.gap = "8px";
+    const playButton = this.add
+      .text(width / 2, height * 0.72, "JOGAR", {
+        fontFamily: "Arial",
+        fontSize: "42px",
+        color: "#ffffff",
+        backgroundColor: "#2874ff",
+        padding: {
+          left: 30,
+          right: 30,
+          top: 15,
+          bottom: 15
+        }
+      })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
 
-    const nameInput = document.createElement("input");
-    nameInput.type = "text";
-    nameInput.placeholder = "Digite seu nome (obrigatório)";
-    nameInput.style.padding = "10px";
-    nameInput.style.fontSize = "16px";
-    nameInput.style.borderRadius = "6px";
-
-    const playButton = document.createElement("button");
-    playButton.textContent = "JOGAR";
-    playButton.style.padding = "10px 18px";
-    playButton.style.fontSize = "16px";
-    playButton.style.borderRadius = "6px";
-    playButton.style.background = "#2874ff";
-    playButton.style.color = "#fff";
-    playButton.style.border = "none";
-
-    playButton.addEventListener("click", () => {
-      const name = nameInput.value.trim();
-      if (!name) {
-        nameInput.focus();
-        nameInput.style.border = "2px solid #ff4d4d";
-        return;
-      }
-
-      // persist and start world with name
-      localStorage.setItem("playerName", name);
-      // remove DOM UI
-      if (nameContainer.parentNode) nameContainer.parentNode.removeChild(nameContainer);
-      this.scene.start("WorldScene", { playerName: name });
-    });
-
-    nameInput.addEventListener("keydown", (ev) => {
-      if (ev.key === "Enter") playButton.click();
-    });
-
-    nameContainer.appendChild(nameInput);
-    nameContainer.appendChild(playButton);
-    document.body.appendChild(nameContainer);
+    playButton.on("pointerdown", () => {
+  this.scene.start("WorldScene");
+});
   }
 }

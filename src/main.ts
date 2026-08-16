@@ -18,5 +18,5 @@ const config: Phaser.Types.Core.GameConfig = {
 
   scene: [MenuScene, WorldScene, ChatUIScene]
 };
-
+  
 new Phaser.Game(config);                      
